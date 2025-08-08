@@ -10,7 +10,7 @@ from contextlib import contextmanager
 import numpy as np
 from sklearn.linear_model import Ridge
 
-# ---------- Configuration ----------
+
 class Config:
     DB = {
         "host": os.getenv("DB_HOST", "localhost"),
@@ -24,7 +24,7 @@ class Config:
     MAX_CSV_ROWS = 10000
     MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
-# ---------- Setup ----------
+
 app = Flask(__name__, static_folder=None)
 
 # Configure logging
@@ -34,7 +34,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ---------- Database Connection Management ----------
 @contextmanager
 def get_db_connection():
     """Context manager for database connections with proper error handling."""
@@ -62,7 +61,7 @@ def clean_item(name: str) -> str:
     if not name:
         return ""
     name = name.strip().lower()
-    # Expandable mapping for item name normalization
+  
     name_mapping = {
         "momu": "momo",
         "mo mo": "momo",
@@ -119,7 +118,7 @@ def validate_json(required_fields=None):
         return decorated_function
     return decorator
 
-# ---------- Frontend Routes ----------
+
 @app.route("/")
 def index():
     """Serve the main HTML file."""
