@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Momo Metrics Dashboard 🥟</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      --hover-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .main-header {
+      background: var(--primary-gradient);
+      color: white;
+      padding: 2rem 0;
+      margin-bottom: 2rem;
+      border-radius: 0 0 20px 20px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .main-header h1 {
+      font-weight: 700;
+      font-size: 2.5rem;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .main-header .lead {
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    .enhanced-card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: var(--card-shadow);
+      border: none;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      margin-bottom: 2rem;
+    }
+
+    .enhanced-card:hover {
+      box-shadow: var(--hover-shadow);
+      transform: translateY(-2px);
+    }
+
+    .card-header-custom {
+      background: var(--primary-gradient);
+      color: white;
+      padding: 1.5rem;
+      border: none;
+    }
+
+    .card-header-custom h4 {
+      margin: 0;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-floating {
+      margin-bottom: 1rem;
+    }
+
+    .btn-gradient-primary {
+      background: var(--primary-gradient);
+      border: none;
+      color: white;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      color: white;
+    }
+
+    .btn-gradient-success {
+      background: var(--success-gradient);
+      border: none;
+      color: white;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(75, 172, 254, 0.4);
+      color: white;
+    }
+
+    .btn-gradient-warning {
+      background: var(--warning-gradient);
+      border: none;
+      color: white;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient-warning:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(250, 112, 154, 0.4);
+      color: white;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .nav-buttons button {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .table-container {
+      max-height: 500px;
+      overflow-y: auto;
+      border-radius: 10px;
+    }
+
+    .table th {
+      background-color: #f8f9fa;
+      border: none;
+      font-weight: 600;
+      color: #495057;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .table td {
+      border: none;
+      padding: 0.75rem;
+      vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+      background-color: #f1f3f4;
+    }
+
+    .stats-row {
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: var(--card-shadow);
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--hover-shadow);
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: #6c757d;
+      font-weight: 500;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #007bff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .alert-custom {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 400px;
+      margin-top: 1rem;
+    }
+
+    .confidence-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .confidence-high { background: #d4edda; color: #155724; }
+    .confidence-medium { background: #fff3cd; color: #856404; }
+    .confidence-low { background: #f8d7da; color: #721c24; }
+
+    .upload-zone {
+      border: 2px dashed #dee2e6;
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .upload-zone:hover {
+      border-color: #007bff;
+      background-color: #f8f9ff;
+    }
+
+    .upload-zone.dragover {
+      border-color: #28a745;
+      background-color: #f8fff9;
+    }
+
+    .section-hidden {
+      display: none !important;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-content {
+      border-radius: 15px;
+      border: none;
+      box-shadow: var(--hover-shadow);
+    }
+
+    .btn-close-white {
+      filter: invert(1);
+    }
+
+    @media (max-width: 768px) {
+      .nav-buttons {
+        flex-direction: column;
+      }
+      
+      .nav-buttons button {
+        min-width: auto;
+      }
+      
+      .main-header h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="main-header">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1><i class="fas fa-chart-line me-2"></i>Momo Metrics Dashboard 🥟</h1>
+          <p class="lead mb-0">Comprehensive sales tracking and analytics platform</p>
+        </div>
+        <div class="col-md-4 text-end">
+          <button class="btn btn-light" id="healthCheckBtn">
+            <i class="fas fa-heartbeat me-1"></i>System Health
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- System Status Alert -->
+    <div id="systemAlert" class="alert alert-info alert-custom d-none">
+      <i class="fas fa-info-circle me-2"></i>
+      <span id="systemMessage">System status loading...</span>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row stats-row" id="statsRow">
+      <div class="col-md-3 mb-3">
+        <div class="stat-card">
+          <div class="stat-value text-primary" id="totalSales">-</div>
+          <div class="stat-label">Total Sales</div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="stat-card">
+          <div class="stat-value text-success" id="totalRevenue">-</div>
+          <div class="stat-label">Total Revenue</div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="stat-card">
+          <div class="stat-value text-warning" id="avgSale">-</div>
+          <div class="stat-label">Avg Sale</div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="stat-card">
+          <div class="stat-value text-info" id="topBranch">-</div>
+          <div class="stat-label">Top Branch</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Sale Form -->
+    <div class="enhanced-card">
+      <div class="card-header-custom">
+        <h4><i class="fas fa-plus-circle me-2"></i>Add New Sale</h4>
+      </div>
+      <div class="card-body p-4">
+        <form id="saleForm">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-floating">
+                <input type="text" class="form-control" id="branch" name="branch" placeholder="Branch" required>
+                <label for="branch"><i class="fas fa-store me-1"></i>Branch</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-floating">
+                <input type="text" class="form-control" id="item" name="item" placeholder="Item" required>
+                <label for="item"><i class="fas fa-utensils me-1"></i>Item</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-floating">
+                <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Quantity" min="1" required>
+                <label for="quantity"><i class="fas fa-sort-numeric-up me-1"></i>Quantity</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-floating">
+                <input type="number" class="form-control" id="price" name="price" placeholder="Price" min="0.01" step="0.01" required>
+                <label for="price"><i class="fas fa-dollar-sign me-1"></i>Price</label>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-md-6">
+              <button type="submit" class="btn btn-gradient-primary w-100" id="submitBtn">
+                <i class="fas fa-plus me-1"></i>Add Sale
+              </button>
+            </div>
+            <div class="col-md-6">
+              <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                <i class="fas fa-upload me-1"></i>Bulk Upload CSV
+              </button>
+            </div>
+          </div>
+        </form>
+        <div id="formMsg" class="mt-3"></div>
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="nav-buttons">
+      <button id="btnFull" class="btn btn-gradient-primary">
+        <i class="fas fa-table me-1"></i>View Sales Data
+      </button>
+      <button id="btnGraph" class="btn btn-gradient-success">
+        <i class="fas fa-chart-area me-1"></i>Revenue Trends
+      </button>
+      <button id="btnForecast" class="btn btn-gradient-warning">
+        <i class="fas fa-crystal-ball me-1"></i>7-Day Forecast
+      </button>
+    </div>
+
+    <!-- Sales Table Section -->
+    <div id="sectionFull" class="enhanced-card section-hidden">
+      <div class="card-header-custom">
+        <h4><i class="fas fa-table me-2"></i>Recent Sales Data</h4>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-container">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Branch</th>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="fullBody">
+              <tr>
+                <td colspan="7" class="text-center py-4">
+                  <div class="loading-spinner me-2"></div>Loading data...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="p-3 bg-light">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <small class="text-muted" id="tableInfo">Showing recent sales</small>
+            </div>
+            <div class="col-md-6 text-end">
+              <button class="btn btn-sm btn-outline-primary" id="refreshData">
+                <i class="fas fa-sync-alt me-1"></i>Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historical Graph Section -->
+    <div id="sectionGraph" class="enhanced-card section-hidden">
+      <div class="card-header-custom">
+        <h4><i class="fas fa-chart-area me-2"></i>Revenue Trends Over Time</h4>
+      </div>
+      <div class="card-body">
+        <div class="chart-container">
+          <canvas id="salesChart"></canvas>
+        </div>
+        <div class="mt-3 text-muted">
+          <i class="fas fa-info-circle me-1"></i>
+          Daily revenue tracking with trend analysis
+        </div>
+      </div>
+    </div>
+
+    <!-- Forecast Section -->
+    <div id="sectionForecast" class="enhanced-card section-hidden">
+      <div class="card-header-custom">
+        <h4><i class="fas fa-crystal-ball me-2"></i>7-Day Revenue Forecast</h4>
+      </div>
+      <div class="card-body">
+        <div id="forecastInfo" class="mb-3"></div>
+        <div class="chart-container">
+          <canvas id="forecastChart"></canvas>
+        </div>
+        <div class="mt-3">
+          <small class="text-muted">
+            <i class="fas fa-lightbulb me-1"></i>
+            Predictions based on machine learning analysis of historical data patterns
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSV Upload Modal -->
+  <div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header" style="background: var(--primary-gradient); color: white;">
+          <h5 class="modal-title"><i class="fas fa-upload me-2"></i>Bulk Upload Sales Data</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="upload-zone" id="uploadZone">
+            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+            <h5>Drop your CSV file here</h5>
+            <p class="text-muted">Or click to select a file</p>
+            <input type="file" id="csvFile" accept=".csv" class="d-none">
+            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('csvFile').click()">
+              <i class="fas fa-file-csv me-1"></i>Select CSV File
+            </button>
+          </div>
+          <div class="mt-3">
+            <small class="text-muted">
+              <strong>CSV Format:</strong> branch, item, quantity, price<br>
+              <strong>Max file size:</strong> 5MB | <strong>Max rows:</strong> 10,000
+            </small>
+          </div>
+          <div id="uploadProgress" class="mt-3 d-none">
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+            </div>
+          </div>
+          <div id="uploadMsg" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Configuration
+    const API = "";
+    const CHARTS = {};
+    const APP_STATE = {
+      currentSection: null,
+      data: {
+        sales: null,
+        series: null,
+        forecast: null
+      }
+    };
+
+    // Utility Functions
+    function showLoading(element, message = 'Loading...') {
+      element.innerHTML = `
+        <div class="text-center py-4">
+          <div class="loading-spinner me-2"></div>${message}
+        </div>
+      `;
+    }
+
+    function showError(element, message = 'An error occurred') {
+      element.innerHTML = `
+        <div class="alert alert-danger alert-custom">
+          <i class="fas fa-exclamation-triangle me-2"></i>${message}
+        </div>
+      `;
+    }
+
+    function showSuccess(element, message, autoHide = true) {
+      element.innerHTML = `
+        <div class="alert alert-success alert-custom">
+          <i class="fas fa-check-circle me-2"></i>${message}
+        </div>
+      `;
+      if (autoHide) {
+        setTimeout(() => element.innerHTML = '', 3000);
+      }
+    }
+
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+      }).format(amount);
+    }
+
+    function formatNumber(num) {
+      return new Intl.NumberFormat('en-US').format(num);
+    }
+
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('.enhanced-card:not(.stats-row .stat-card)').forEach(card => {
+        if (card.id && card.id.startsWith('section')) {
+          card.classList.add('section-hidden');
+        }
+      });
+      
+      // Show target section
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.classList.remove('section-hidden');
+        section.classList.add('fade-in');
+        APP_STATE.currentSection = sectionId;
+      }
+    }
+
+    async function makeRequest(url, options = {}) {
+      try {
+        const response = await fetch(`${API}${url}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+          },
+          ...options
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || `HTTP ${response.status}`);
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('API Request failed:', error);
+        throw error;
+      }
+    }
+
+    // System Health Check
+    async function checkSystemHealth() {
+      try {
+        const health = await makeRequest('/api/health');
+        const alertEl = document.getElementById('systemAlert');
+        const messageEl = document.getElementById('systemMessage');
+        
+        if (health.status === 'healthy') {
+          alertEl.className = 'alert alert-success alert-custom d-block';
+          messageEl.innerHTML = '<i class="fas fa-check-circle me-1"></i>System is healthy and operational';
+        } else {
+          alertEl.className = 'alert alert-warning alert-custom d-block';
+          messageEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>System health check failed';
+        }
+        
+        setTimeout(() => alertEl.classList.add('d-none'), 5000);
+      } catch (error) {
+        const alertEl = document.getElementById('systemAlert');
+        const messageEl = document.getElementById('systemMessage');
+        alertEl.className = 'alert alert-danger alert-custom d-block';
+        messageEl.innerHTML = '<i class="fas fa-times-circle me-1"></i>Unable to connect to server';
+      }
+    }
+
+    // Load and display statistics
+    async function loadStats() {
+      try {
+        const response = await makeRequest('/api/sales/full');
+        const salesData = response.success ? response.data : response;
+        
+        if (!Array.isArray(salesData) || salesData.length === 0) {
+          return;
+        }
+
+        const totalSales = salesData.length;
+        const totalRevenue = salesData.reduce((sum, sale) => sum + sale.total, 0);
+        const avgSale = totalRevenue / totalSales;
+        
+        // Find top branch
+        const branchRevenue = {};
+        salesData.forEach(sale => {
+          branchRevenue[sale.branch] = (branchRevenue[sale.branch] || 0) + sale.total;
+        });
+        const topBranch = Object.keys(branchRevenue).reduce((a, b) => 
+          branchRevenue[a] > branchRevenue[b] ? a : b
+        );
+
+        document.getElementById('totalSales').textContent = formatNumber(totalSales);
+        document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+        document.getElementById('avgSale').textContent = formatCurrency(avgSale);
+        document.getElementById('topBranch').textContent = topBranch;
+      } catch (error) {
+        console.error('Failed to load stats:', error);
+      }
+    }
+
+    // Form submission handler
+    document.getElementById('saleForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<div class="loading-spinner me-1"></div>Adding...';
+      submitBtn.disabled = true;
+      
+      try {
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
+        data.quantity = parseInt(data.quantity);
+        data.price = parseFloat(data.price);
+
+        await makeRequest('/api/sale', {
+          method: 'POST',
+          body: JSON.stringify(data)
+        });
+
+        showSuccess(document.getElementById('formMsg'), 'Sale added successfully!');
+        e.target.reset();
+        
+        // Refresh stats and current view
+        loadStats();
+        if (APP_STATE.currentSection === 'sectionFull') {
+          loadFullSales();
+        }
+      } catch (error) {
+        showError(document.getElementById('formMsg'), error.message);
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Load full sales data
+    async function loadFullSales() {
+      const tbody = document.getElementById('fullBody');
+      showLoading(tbody, 'Loading sales data...');
+      
+      try {
+        const response = await makeRequest('/api/sales/full');
+        const salesData = response.success ? response.data : response;
+        
+        if (!Array.isArray(salesData) || salesData.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">No sales data found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = salesData.map(sale => `
+          <tr>
+            <td><strong>#${sale.id}</strong></td>
+            <td><span class="badge bg-primary">${sale.branch}</span></td>
+            <td>${sale.item}</td>
+            <td><span class="badge bg-info">${sale.quantity}</span></td>
+            <td>${formatCurrency(sale.price)}</td>
+            <td><strong>${formatCurrency(sale.total)}</strong></td>
+            <td><small>${new Date(sale.sale_date).toLocaleDateString()}</small></td>
+          </tr>
+        `).join('');
+        
+        document.getElementById('tableInfo').textContent = `Showing ${salesData.length} recent sales`;
+      } catch (error) {
+        showError(tbody, 'Failed to load sales data: ' + error.message);
+      }
+    }
+
+    // Load and display sales chart
+    async function loadSalesChart() {
+      try {
+        const response = await makeRequest('/api/sales/series');
+        const seriesData = response.success ? response.data : response;
+        
+        if (!Array.isArray(seriesData) || seriesData.length === 0) {
+          document.querySelector('#sectionGraph .card-body').innerHTML = 
+            '<div class="alert alert-info alert-custom">No historical data available</div>';
+          return;
+        }
+
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        
+        if (CHARTS.sales) {
+          CHARTS.sales.destroy();
+        }
+
+        CHARTS.sales = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: seriesData.map(d => new Date(d.date).toLocaleDateString()),
+            datasets: [{
+              label: 'Daily Revenue',
+              data: seriesData.map(d => d.revenue),
+              borderColor: '#667eea',
+              backgroundColor: 'rgba(102, 126, 234, 0.1)',
+              borderWidth: 3,
+              tension: 0.4,
+              fill: true,
+              pointBackgroundColor: '#667eea',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointRadius: 5,
+              pointHoverRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return formatCurrency(value);
+                  }
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        showError(document.querySelector('#sectionGraph .card-body'), 'Failed to load chart: ' + error.message);
+      }
+    }
+
+    // Load and display forecast
+    async function loadForecast() {
+      try {
+        const response = await makeRequest('/api/sales/forecast?days=7');
+        const forecastData = response.success ? response.data : response;
+        
+        if (!Array.isArray(forecastData) || forecastData.length === 0) {
+          document.querySelector('#sectionForecast .card-body').innerHTML = 
+            '<div class="alert alert-info alert-custom">Unable to generate forecast</div>';
+          return;
+        }
+
+        // Display forecast info
+        const infoEl = document.getElementById('forecastInfo');
+        const confidence = forecastData[0].confidence || 'medium';
+        const model = response.model || 'unknown';
+        const modelScore = response.model_score || 'N/A';
+        
+        infoEl.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <span class="confidence-badge confidence-${confidence}">
+                ${confidence} confidence
+              </span>
+              <small class="text-muted ms-2">Model: ${model}</small>
+            </div>
+            <div class="text-end">
+              <small class="text-muted">Score: ${modelScore}</small>
+            </div>
+          </div>
+        `;
+
+        const ctx = document.getElementById('forecastChart').getContext('2d');
+        
+        if (CHARTS.forecast) {
+          CHARTS.forecast.destroy();
+        }
+
+        CHARTS.forecast = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: forecastData.map(d => new Date(d.date).toLocaleDateString()),
+            datasets: [{
+              label: 'Predicted Revenue',
+              data: forecastData.map(d => d.revenue),
+              borderColor: '#fa709a',
+              backgroundColor: 'rgba(250, 112, 154, 0.1)',
+              borderWidth: 3,
+              tension: 0.4,
+              fill: true,
+              pointBackgroundColor: '#fa709a',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointRadius: 5,
+              pointHoverRadius: 8,
+              borderDash: [5, 5]
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return formatCurrency(value);
+                  }
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        showError(document.querySelector('#sectionForecast .card-body'), 'Failed to load forecast: ' + error.message);
+      }
+    }
+
+    // CSV Upload functionality
+    function initializeUpload() {
+      const uploadZone = document.getElementById('uploadZone');
+      const fileInput = document.getElementById('csvFile');
+      const uploadMsg = document.getElementById('uploadMsg');
+      const uploadProgress = document.getElementById('uploadProgress');
+
+      // Drag and drop handlers
+      uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+      });
+
+      uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('dragover');
+      });
+
+      uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          handleFileUpload(files[0]);
+        }
+      });
+
+      uploadZone.addEventListener('click', () => {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handleFileUpload(e.target.files[0]);
+        }
+      });
+
+      async function handleFileUpload(file) {
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+          showError(uploadMsg, 'Please select a CSV file');
+          return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          showError(uploadMsg, 'File size must be less than 5MB');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        uploadProgress.classList.remove('d-none');
+        uploadMsg.innerHTML = '';
+
+        try {
+          const response = await fetch(`${API}/api/upload_csv`, {
+            method: 'POST',
+            body: formData
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            showSuccess(uploadMsg, 
+              `Successfully uploaded! ${result.inserted || 0} records inserted${result.skipped ? `, ${result.skipped} skipped` : ''}`, 
+              false
+            );
+            fileInput.value = '';
+            loadStats();
+            if (APP_STATE.currentSection === 'sectionFull') {
+              loadFullSales();
+            }
+          } else {
+            showError(uploadMsg, result.error || 'Upload failed');
+          }
+        } catch (error) {
+          showError(uploadMsg, 'Upload failed: ' + error.message);
+        } finally {
+          uploadProgress.classList.add('d-none');
+        }
+      }
+    }
+
+    // Event Listeners
+    document.getElementById('btnFull').addEventListener('click', () => {
+      showSection('sectionFull');
+      loadFullSales();
+    });
+
+    document.getElementById('btnGraph').addEventListener('click', () => {
+      showSection('sectionGraph');
+      loadSalesChart();
+    });
+
+    document.getElementById('btnForecast').addEventListener('click', () => {
+      showSection('sectionForecast');
+      loadForecast();
+    });
+
+    document.getElementById('refreshData').addEventListener('click', () => {
+      if (APP_STATE.currentSection === 'sectionFull') {
+        loadFullSales();
+      }
+      loadStats();
+    });
+
+    document.getElementById('healthCheckBtn').addEventListener('click', checkSystemHealth);
+
+    // Auto-refresh functionality
+    let autoRefreshInterval;
+    function startAutoRefresh() {
+      autoRefreshInterval = setInterval(() => {
+        loadStats();
+        if (APP_STATE.currentSection === 'sectionFull') {
+          loadFullSales();
+        }
+      }, 60000); // Refresh every minute
+    }
+
+    function stopAutoRefresh() {
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+      }
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case '1':
+            e.preventDefault();
+            document.getElementById('btnFull').click();
+            break;
+          case '2':
+            e.preventDefault();
+            document.getElementById('btnGraph').click();
+            break;
+          case '3':
+            e.preventDefault();
+            document.getElementById('btnForecast').click();
+            break;
+          case 'r':
+            e.preventDefault();
+            document.getElementById('refreshData').click();
+            break;
+        }
+      }
+    });
+
+    // Initialize application
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🥟 Momo Metrics Dashboard Initialized');
+      
+      // Load initial data
+      checkSystemHealth();
+      loadStats();
+      initializeUpload();
+      startAutoRefresh();
+      
+      // Add tooltips for keyboard shortcuts
+      document.getElementById('btnFull').title = 'View Sales Data (Ctrl+1)';
+      document.getElementById('btnGraph').title = 'Revenue Trends (Ctrl+2)';
+      document.getElementById('btnForecast').title = '7-Day Forecast (Ctrl+3)';
+      document.getElementById('refreshData').title = 'Refresh Data (Ctrl+R)';
+      
+      // Handle visibility change to pause/resume auto-refresh
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          stopAutoRefresh();
+        } else {
+          startAutoRefresh();
+        }
+      });
+      
+      // Handle window before unload
+      window.addEventListener('beforeunload', () => {
+        stopAutoRefresh();
+      });
+    });
+
+    // Service Worker for offline functionality (optional)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(() => {
+        console.log('Service Worker registered');
+      }).catch(() => {
+        console.log('Service Worker registration failed');
+      });
+    }
+
+    // Error boundary for unhandled errors
+    window.addEventListener('error', (e) => {
+      console.error('Global error:', e.error);
+      const alertEl = document.getElementById('systemAlert');
+      const messageEl = document.getElementById('systemMessage');
+      alertEl.className = 'alert alert-danger alert-custom d-block';
+      messageEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>An unexpected error occurred. Please refresh the page.';
+    });
+
+    // Performance monitoring
+    if ('performance' in window) {
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          console.log(`⚡ Page loaded in ${Math.round(perfData.loadEventEnd - perfData.fetchStart)}ms`);
+        }, 0);
+      });
+    }
+  </script>
+</body>
+</html>
